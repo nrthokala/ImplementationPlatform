@@ -1,0 +1,30 @@
+library(VGAM)
+library(tidyverse)
+library(MASS)
+abalone_full = read.csv("abalone.csv")
+
+fit_res = tibble(
+  Item = c("First_intercept", "Second_intercept", "SexI", 
+           "SexM", "Length"),
+  Estimate = c(
+    round(as.numeric(t_nb1@coefficients["(Intercept):1"]),2), 
+    round(as.numeric(t_nb1@coefficients["(Intercept):2"]),2), 
+    round(as.numeric(t_nb1@coefficients["SexI"]),2),
+    round(as.numeric(t_nb1@coefficients["SexM"]),2),
+    round(as.numeric(t_nb1@coefficients["Length"]),2)),
+  Standard_Error = c(
+    round(as.numeric((summary(t_nb1)@coef3[,"Std. Error"])["(Intercept):1"]),2),
+    round(as.numeric((summary(t_nb1)@coef3[,"Std. Error"])["(Intercept):2"]),2),
+    round(as.numeric((summary(t_nb1)@coef3[,"Std. Error"])["SexI"]),2),
+    round(as.numeric((summary(t_nb1)@coef3[,"Std. Error"])["SexM"]),2),
+    round(as.numeric((summary(t_nb1)@coef3[,"Std. Error"])["Length"]),2))
+)
+cap = '**Table 1.** The Estimate and Standard Error of Regression Coefficients.'
+knitr::kable(fit_res, align = 'r', caption = cap)
+
+Prediction_Rings = predict(t_nb1, abalone, type = "response")
+Prediction_Rings = cbind(Prediction_Rings,abalone)
+
+ggplot(Prediction_Rings, aes(x = Length, y = Prediction_Rings, col = Sex)) +
+  geom_line() +
+  facet_wrap(~ Sex)
